@@ -55,11 +55,14 @@ if __name__ == '__main__':
 	utcnow = datetime.datetime.utcnow()
 	wireless_statistics = NetStatistics('wlp4s0')
 	while True:
-		sleepseconds = 1.0 - (utcnow.microsecond / 1000000.0)
+		# Log a line every minute
+		sleepseconds = 60.0 - utcnow.second - (utcnow.microsecond / 1000000.0)
 		time.sleep(sleepseconds)
 		loadavg = LoadAvg.read()
 		meminfo = MemInfo.read()
 		rx_bytes = wireless_statistics.read_rx_bytes()
 		tx_bytes = wireless_statistics.read_tx_bytes()
 		utcnow = datetime.datetime.utcnow()
-		print(utcnow.isoformat() + ' ' + str(meminfo.memory_available) + ' ' + str(loadavg.last_minute) + ' ' + str(rx_bytes) + ' ' + str(tx_bytes))
+		timestamp = utcnow.isoformat(timespec='minutes')
+		logline = timestamp + ' ' + str(meminfo.memory_available) + ' ' + str(loadavg.last_minute) + ' ' + str(rx_bytes) + ' ' + str(tx_bytes)
+		print(logline)
