@@ -1,4 +1,5 @@
 import datetime
+import os
 import re
 import time
 
@@ -35,11 +36,14 @@ class MemInfo:
 
 # https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-net-statistics
 class NetStatistics:
-	def __init__(self, iface):
-		self.iface = iface
+	def __init__(self, interface_name):
+		interface_path = '/sys/class/net/' + interface_name
+		if not os.path.isdir(interface_path):
+			raise ValueError("No such interface: '" + interface_name + "'")
+		self.statistics_path = interface_path + '/statistics/' 
 
 	def __read_file_content(self, filename):
-		filepath = '/sys/class/net/' + self.iface + '/statistics/' + filename
+		filepath = self.statistics_path + filename
 		with open(filepath, 'r') as input_file:
 			file_read = input_file.read()
 		return int(file_read)
