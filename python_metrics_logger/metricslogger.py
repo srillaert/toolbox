@@ -15,7 +15,7 @@ class LoadAvg:
 			meminforead = input_file.read()
 		return cls(meminforead)
 
-line_re = re.compile('^(?P<name>[^:]+):[ ]+(?P<value>\d+)');
+line_re = re.compile(r'^(?P<name>[^:]+):[ ]+(?P<value>\d+)');
 
 class MemInfo:
 	def __init__(self, meminforead):
