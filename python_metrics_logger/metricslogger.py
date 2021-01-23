@@ -3,6 +3,16 @@ import os
 import re
 import time
 
+class FileLogger:
+	def __init__(self, file_name, header):
+		self.log_file = open(file_name, "w")
+		self.log_file.write(header + "\n")
+		self.log_file.flush()
+
+	def log(self, line):
+		self.log_file.write(line + "\n")
+		self.log_file.flush()
+
 class LoadAvg:
 	def __init__(self, loadavgread):
 		# From `man proc` : The first three fields in this file are load average figures giving the number of jobs in the run queue (state R) or waiting  for  disk  I/O (state  D)  averaged  over  1, 5, and 15 minutes.
@@ -15,8 +25,7 @@ class LoadAvg:
 			meminforead = input_file.read()
 		return cls(meminforead)
 
-line_re = re.compile(r'^(?P<name>[^:]+):[ ]+(?P<value>\d+)');
-
+line_re = re.compile(r'^(?P<name>[^:]+):[ ]+(?P<value>\d+)')
 class MemInfo:
 	def __init__(self, meminforead):
 		name_to_value = dict()
@@ -55,7 +64,7 @@ class NetStatistics:
 		return int(self.__read_file_content('tx_bytes'))
 
 if __name__ == '__main__':
-	print('timestamp memory_available load_avg rx_bytes tx_bytes')
+	logger = FileLogger('metricslogger.csv', 'timestamp memory_available load_avg rx_bytes tx_bytes')
 	utcnow = datetime.datetime.utcnow()
 	wireless_statistics = NetStatistics('wlp4s0')
 	while True:
@@ -69,4 +78,4 @@ if __name__ == '__main__':
 		utcnow = datetime.datetime.utcnow()
 		timestamp = utcnow.isoformat(timespec='minutes')
 		logline = timestamp + ' ' + str(meminfo.memory_available) + ' ' + str(loadavg.last_minute) + ' ' + str(rx_bytes) + ' ' + str(tx_bytes)
-		print(logline)
+		logger.log(logline)
