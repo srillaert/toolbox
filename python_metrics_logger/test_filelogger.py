@@ -1,43 +1,35 @@
 from metricslogger import FileLogger
 import os
+import pytest
 
-def get_nonexisting_test_file_name():
-    file_name = "test_file.csv"
-    if os.path.exists(file_name):
-        os.remove(file_name)
-    return file_name
+test_file_name = "test_file.csv"
 
-def test_FileLogger_existingfile():
-    file_name = get_nonexisting_test_file_name()
+def get_file_content():
+	with open(test_file_name, "r") as log_file:
+		content = log_file.read()
+		return content
 
-    with open(file_name, "w") as log_file:
-        log_file.write("previouscontent\n")
-    
-    file_logger = FileLogger(file_name, "myheader")
+@pytest.fixture()
+def test_file():
+	if os.path.exists(test_file_name):
+		os.remove(test_file_name)
+	yield test_file_name
+	os.remove(test_file_name)
 
-    with open(file_name, "r") as log_file:
-        content = log_file.read()
-    assert content == "previouscontent\n" # header is not being added when the file already existed
+def test_FileLogger_existingfile(test_file):
+	with open(test_file_name, "w") as log_file:
+		log_file.write("previouscontent\n")
+	
+	file_logger = FileLogger(test_file_name, "myheader")
+	# header is not being added when the file already existed
+	assert get_file_content() == "previouscontent\n"
 
-    file_logger.log("myline")
+	file_logger.log("myline")
+	assert get_file_content() == "previouscontent\nmyline\n"
 
-    with open(file_name, "r") as log_file:
-        content = log_file.read()
-    assert content == "previouscontent\nmyline\n"
+def test_FileLogger_newfile(test_file):
+	file_logger = FileLogger(test_file_name, "myheader")	
+	assert get_file_content() == "myheader\n"
 
-    os.remove(file_name)
-
-def test_FileLogger_newfile():
-    file_name = get_nonexisting_test_file_name()
-    file_logger = FileLogger(file_name, "myheader")    
-
-    with open(file_name, "r") as log_file:
-        content = log_file.read()
-    assert content == "myheader\n"
-
-    file_logger.log("myline")
-
-    with open(file_name, "r") as log_file:
-        content = log_file.read()
-    assert content == "myheader\nmyline\n"
-    os.remove(file_name)
+	file_logger.log("myline")
+	assert get_file_content() == "myheader\nmyline\n"
