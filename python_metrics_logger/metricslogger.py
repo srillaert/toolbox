@@ -5,9 +5,11 @@ import time
 
 class FileLogger:
 	def __init__(self, file_name, header):
-		self.log_file = open(file_name, "w")
-		self.log_file.write(header + "\n")
-		self.log_file.flush()
+		is_existing_file = os.path.isfile(file_name)
+		self.log_file = open(file_name, "a")
+		if not is_existing_file:
+			self.log_file.write(header + "\n")
+			self.log_file.flush()
 
 	def log(self, line):
 		self.log_file.write(line + "\n")
