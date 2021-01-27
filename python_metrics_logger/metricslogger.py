@@ -3,6 +3,19 @@ import os
 import re
 import time
 
+class Battery:
+	def __init__(self):
+		self.battery_path = '/sys/class/power_supply/BAT0/'
+
+	def __read_file_content(self, filename):
+		filepath = self.battery_path + filename
+		with open(filepath, 'r') as input_file:
+			file_read = input_file.read()
+		return int(file_read)
+
+	def read_capacity(self):
+		return int(self.__read_file_content('capacity'))
+
 class FileLogger:
 	def __init__(self, file_name, header):
 		is_existing_file = os.path.isfile(file_name)
@@ -66,7 +79,8 @@ class NetStatistics:
 		return int(self.__read_file_content('tx_bytes'))
 
 if __name__ == '__main__':
-	logger = FileLogger('metricslogger.csv', 'timestamp memory_available load_avg rx_bytes tx_bytes')
+	logger = FileLogger('metricslogger.csv', 'timestamp memory_available load_avg rx_bytes tx_bytes battery_capacity')
+	battery = Battery()
 	utcnow = datetime.datetime.utcnow()
 	wireless_statistics = NetStatistics('wlp4s0')
 	while True:
@@ -77,7 +91,8 @@ if __name__ == '__main__':
 		meminfo = MemInfo.read()
 		rx_bytes = wireless_statistics.read_rx_bytes()
 		tx_bytes = wireless_statistics.read_tx_bytes()
+		battery_capacity = battery.read_capacity()
 		utcnow = datetime.datetime.utcnow()
 		timestamp = utcnow.isoformat(timespec='minutes')
-		logline = timestamp + ' ' + str(meminfo.memory_available) + ' ' + str(loadavg.last_minute) + ' ' + str(rx_bytes) + ' ' + str(tx_bytes)
+		logline = timestamp + ' ' + str(meminfo.memory_available) + ' ' + str(loadavg.last_minute) + ' ' + str(rx_bytes) + ' ' + str(tx_bytes) + ' ' + str(battery_capacity)
 		logger.log(logline)
