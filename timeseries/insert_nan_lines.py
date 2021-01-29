@@ -13,6 +13,6 @@ previous = get_timestamp(first_data_line)
 for line in stdin:
 	current = get_timestamp(line)
 	if ((current - previous).total_seconds() > 60):
-		print((previous + timedelta(seconds=60)).isoformat()) # insert the NaN line
+		print((previous + timedelta(seconds=60)).isoformat(timespec='minutes')) # insert the NaN line
 	print(line, end='')
 	previous = current
